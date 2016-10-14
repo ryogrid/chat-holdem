@@ -2,6 +2,27 @@
 <html>
   <head>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+    <style>
+      table , td, th {
+      border: 1px solid #595959;
+      border-collapse: collapse;
+      }
+      td, th {
+      padding: 3px;
+      width: 30px;
+      height: 25px;
+      vertical-align: top;
+      }
+      th {
+      background: #f0e6cc;
+      }
+      .even {
+      background: #fbf8f0;
+      }
+      .odd {
+      background: #fefcf9;
+      }
+    </style>
     <script>
       $(function() {
       var data = {};
@@ -19,11 +40,87 @@
     </script>
   </head>
   <body>
-    <input type="text" id="name" value="please fill in your name" />
-    <div id="sender">
-      <input type="text" id="message" value="" />
-    </div>
-    <h3>Messages</h3>
-    <div id="holder"></div>        
+    <table>
+      <tbody>
+	<tr>
+	  <td style="width: 500px;">
+	    <div id="left_side">
+	      <input type="text" id="name" value="please fill in your name first!" />
+	      <div id="sender">
+		<input type="text" id="message" value="" />
+	      </div>
+	      <h3>commands</h3>
+	      <p><b>bet and raise:</b> b &lt;amount&gt; </p>
+	      <p><b>call:</b> c</p>
+	      <p><b>fold:</b> f</p>
+	      <p><b>check:</b> b 0</p>
+	      <h3>commands(dealer)</h3>
+	      <p><b>set or change blind:</b> bset &lt;SB amount&gt; &lt;BB amountt&gt;</p>
+	      <p><b>move chip from pod to player:</b> pmv &lt;player number&gt; &lt;amountt&gt;</p>
+	      <p><b>start next game:</b> n</p>
+	      <p><b>change chip amount of a user:</b> cset &lt;player number&gt; &lt;amount&gt;</p>
+	      <h3>Messages</h3>
+	      <div id="holder"></div>
+	    </div>
+	  </td>
+	  <td>
+	    <div id="right_side">
+	      <table>
+		<tbody>
+		  <tr>
+		    <td>player number</td>
+		    <td>1</td>
+		    <td>2</td>
+		    <td>3</td>
+		    <td>4</td>
+		    <td>5</td>
+		  </tr>
+		  <tr>
+		    <td>name</td>
+		    <td>aaa</td>
+		    <td>bbb</td>
+		    <td>ccc</td>
+		    <td>ddd</td>
+		    <td>eee</td>
+		  </tr>
+		  <tr>
+		    <td>role</td>
+		    <td>SB</td>
+		    <td>BB</td>
+		    <td></td>
+		    <td></td>
+		    <td>D</td>
+		  </tr>	  
+		  <tr>
+		    <td>active</td>
+		    <td></td>
+		    <td></td>
+		    <td>###</td>
+		    <td></td>
+		    <td></td>
+		  </tr>
+		  <tr>
+		    <td>betting chips</td>
+		    <td>1</td>
+		    <td>2</td>
+		    <td>0</td>
+		    <td>0</td>
+		    <td>0</td>
+		  </tr>
+		  <tr>
+		    <td>reft chips</td>
+		    <td>100</td>
+		    <td>100</td>
+		    <td>100</td>
+		    <td>100</td>
+		    <td>100</td>
+		  </tr>
+		</tbody>
+	      </table>
+	    </div>
+	  </td>
+	</tr>
+      </tbody>
+    </table>    
   </body>
 </html>
