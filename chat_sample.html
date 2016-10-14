@@ -10,19 +10,20 @@
       ws.send('hi');
       };
       ws.onmessage = function(e) {
-      $("#holder").append($('<p>'+e.data+'</p>'));
+      $("#holder").prepend($('<p>'+e.data+'</p>'));
       };
       $('#sender').append($('<button/>').text('send').click(function(){
-      ws.send($('#message').val());
+      ws.send($('#name').val()+':'+$('#message').val());
       }));
       });
     </script>
   </head>
   <body>
+    <input type="text" id="name" value="please fill in your name" />
     <div id="sender">
-      <input type="text" id="message" value="text" />
+      <input type="text" id="message" value="" />
     </div>
     <h3>Messages</h3>
-    <div id="holder"></div>
+    <div id="holder"></div>        
   </body>
 </html>
