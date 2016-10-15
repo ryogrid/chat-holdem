@@ -5,76 +5,6 @@ from gevent import pywsgi, sleep
 
 ws_set = set()
 
-replace_table_str = """
-	    <div class="right_side">
-	      <H3>hK sK cK</h3>
-	      <table>
-		<tbody>
-		  <tr>
-		    <td>pod</td>
-		    <td>0</td>
-		  </tr>		  		  		  
-		  <tr>
-		    <td>player number</td>
-		    <td>1</td>
-		    <td>2</td>
-		    <td>3</td>
-		    <td>4</td>
-		    <td>5</td>
-		  </tr>
-		  <tr>
-		    <td>name</td>
-		    <td>aaa</td>
-		    <td>bbb</td>
-		    <td>ccc</td>
-		    <td>ddd</td>
-		    <td>eee</td>
-		  </tr>
-		  <tr>
-		    <td>role</td>
-		    <td>SB</td>
-		    <td>BB</td>
-		    <td></td>
-		    <td></td>
-		    <td></td>
-		  </tr>	  
-		  <tr>
-		    <td>active</td>
-		    <td></td>
-		    <td></td>
-		    <td>###</td>
-		    <td></td>
-		    <td></td>
-		  </tr>
-		  <tr>
-		    <td>betting chips</td>
-		    <td>1</td>
-		    <td>2</td>
-		    <td>0</td>
-		    <td>0</td>
-		    <td>0</td>
-		  </tr>
-		  <tr>
-		    <td>reft chips</td>
-		    <td>100</td>
-		    <td>100</td>
-		    <td>100</td>
-		    <td>100</td>
-		    <td>100</td>
-		  </tr>
-		  <tr>
-		    <td>hand</td>
-		    <td>hA sK</td>
-		    <td></td>
-		    <td></td>
-		    <td></td>
-		    <td></td>
-		  </tr>
-		</tbody>
-	      </table>
-           </div>
-"""
-
 user_hash = {} # ws => name
 user_list = [] # contains names
 
@@ -90,18 +20,60 @@ comm_cards = ["??", "??", "??", "??", "??"]
 user_names = ["init", "init", "init", "init", "init"]
 roles = ["SB", "BB", "", "", ""]
 statuses = ["###", "", "", "", ""]
+cards = []
+open_flags = [0, 0, 0, 0, 0]
+
+def gen_all_cards():
+    global cards
+    nums = ["A", "2","3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]
+    marks = ["s", "h", "d", "c"]
+    cards = []
+    for mark in marks:
+        for num in nums:
+            cards.append(mark + num)    
+    
+def shuffle_cards():
+    global cards
+    random.shuffle(cards)
+
+def init_cards():
+    gen_all_cards()
+    shuffle_cards()
+
+def draw_a_card():
+    global cards
+    return cards.pop()
+
+def make_enable_open(idx):
+    global open_flags
+    open_flags[idx] = 1
+
+def make_all_close():
+    global open_flags
+    open_flags = [0, 0, 0, 0, 0]
 
 def is_active(name):
     print("not implemented yet")
 
 def handle_join(name):
+    global user_names
     idx = user_list.index(name)
     user_names[idx] = name
     return
+
+def handle_next_game():
+    global hands
+    user_num = len(user_list)
+    init_cards()
+    for idx in xrange(user_num):
+        hands[idx][0] = draw_a_card()
+        hands[idx][1] = draw_a_card()
     
 def handle_commands(name, pure_text):
     if pure_text == "j":
         handle_join(name)
+    elif pure_text == "n":
+        handle_next_game()
 
 
 def gen_table_inner(name):
@@ -164,11 +136,26 @@ def gen_table_inner(name):
     ret_str += """</tr>
 		  <tr>
 		    <td>hand</td>"""
-    ret_str += "<td>" + hands[0][0] + " " + hands[0][1] + "</td>"
-    ret_str += "<td>" + hands[1][0] + " " + hands[1][1] + "</td>"
-    ret_str += "<td>" + hands[2][0] + " " + hands[2][1] + "</td>"
-    ret_str += "<td>" + hands[3][0] + " " + hands[3][1] + "</td>"
-    ret_str += "<td>" + hands[4][0] + " " + hands[4][1] + "</td>"
+    if open_flags[0] == 1:
+        ret_str += "<td>" + hands[0][0] + " " + hands[0][1] + "</td>"
+    else:
+        ret_str += "<td>?? ??</td>"
+    if open_flags[1] == 1:
+        ret_str += "<td>" + hands[1][0] + " " + hands[1][1] + "</td>"
+    else:
+        ret_str += "<td>?? ??</td>"
+    if open_flags[2] == 1:
+        ret_str += "<td>" + hands[2][0] + " " + hands[2][1] + "</td>"
+    else:
+        ret_str += "<td>?? ??</td>"
+    if open_flags[3] == 1:
+        ret_str += "<td>" + hands[3][0] + " " + hands[3][1] + "</td>"
+    else:
+        ret_str += "<td>?? ??</td>"
+    if open_flags[4] == 1:
+        ret_str += "<td>" + hands[4][0] + " " + hands[4][1] + "</td>"
+    else:
+        ret_str += "<td>?? ??</td>"
     ret_str += """</tr>
 		</tbody>
 	      </table>
@@ -182,6 +169,9 @@ def gen_table(name, msg):
     return gen_table_inner(name)
 
 def chat_handle(environ, start_response):
+    global user_list
+    global user_hash
+    
     ws = environ['wsgi.websocket']
     ws_set.add(ws)
     print 'enter!', len(ws_set)
@@ -199,7 +189,10 @@ def chat_handle(environ, start_response):
         remove = set()
         for s in ws_set:
             try:
+                if user_name != "init":
+                    make_enable_open(user_list.index(user_name))
                 s.send(msg + "," + gen_table(user_name, msg))
+                make_all_close()
             except Exception:
                 import traceback
                 traceback.print_exc()
