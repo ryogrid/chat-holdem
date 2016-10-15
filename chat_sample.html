@@ -25,18 +25,18 @@
     </style>
     <script>
       $(function() {
-      var data = {};
-      ws = new WebSocket("ws://192.168.0.3:8080/chat");
-      ws.onopen = function() {
-      ws.send('hi');
-      };
-      ws.onmessage = function(e) {
-      $("#holder").prepend($('<p>'+e.data.split(",")[0]+'</p>'));
-      $("div.right_side").replaceWith(e.data.split(",")[1]);
-      };
-      $('#sender').append($('<button/>').text('send').click(function(){
-      ws.send($('#name').val()+':'+$('#message').val());
-      }));
+        var data = {};
+        ws = new WebSocket("ws://192.168.0.3:8080/chat");
+        ws.onopen = function() {
+           ws.send('init:enter!');
+        };
+        ws.onmessage = function(e) {
+          $("#holder").prepend($('<p>'+e.data.split(",")[0]+'</p>'));
+          $("div.right_side").replaceWith(e.data.split(",")[1]);
+        };
+        $('#sender').append($('<button/>').text('send').click(function(){
+          ws.send($('#name').val()+':'+$('#message').val());
+        }));
       });
     </script>
   </head>
