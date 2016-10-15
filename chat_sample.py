@@ -75,8 +75,10 @@ replace_table_str = """
            </div>
 """
 
+num = 0
 def chat_handle(environ, start_response):
     global cnt
+    global num
     ws = environ['wsgi.websocket']
     ws_list.add(ws)
     print 'enter!', len(ws_list)
@@ -87,7 +89,8 @@ def chat_handle(environ, start_response):
         remove = set()
         for s in ws_list:
             try:
-                s.send(msg + "," + replace_table_str)
+                s.send(msg + "," + "<div class=\"right_side\"><p>" + str(num) + "</p></div>")
+                num +=1
             except Exception:
                 remove.add(s)
         for s in remove:
