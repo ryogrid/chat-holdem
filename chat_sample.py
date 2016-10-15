@@ -5,6 +5,76 @@ from gevent import pywsgi, sleep
 
 ws_list = set()
 
+replace_table_str = """
+	    <div class="right_side">
+	      <H3>hK sK cK</h3>
+	      <table>
+		<tbody>
+		  <tr>
+		    <td>pod</td>
+		    <td>0</td>
+		  </tr>		  		  		  
+		  <tr>
+		    <td>player number</td>
+		    <td>1</td>
+		    <td>2</td>
+		    <td>3</td>
+		    <td>4</td>
+		    <td>5</td>
+		  </tr>
+		  <tr>
+		    <td>name</td>
+		    <td>aaa</td>
+		    <td>bbb</td>
+		    <td>ccc</td>
+		    <td>ddd</td>
+		    <td>eee</td>
+		  </tr>
+		  <tr>
+		    <td>role</td>
+		    <td>SB</td>
+		    <td>BB</td>
+		    <td></td>
+		    <td></td>
+		    <td></td>
+		  </tr>	  
+		  <tr>
+		    <td>active</td>
+		    <td></td>
+		    <td></td>
+		    <td>###</td>
+		    <td></td>
+		    <td></td>
+		  </tr>
+		  <tr>
+		    <td>betting chips</td>
+		    <td>1</td>
+		    <td>2</td>
+		    <td>0</td>
+		    <td>0</td>
+		    <td>0</td>
+		  </tr>
+		  <tr>
+		    <td>reft chips</td>
+		    <td>100</td>
+		    <td>100</td>
+		    <td>100</td>
+		    <td>100</td>
+		    <td>100</td>
+		  </tr>
+		  <tr>
+		    <td>hand</td>
+		    <td>hA sK</td>
+		    <td></td>
+		    <td></td>
+		    <td></td>
+		    <td></td>
+		  </tr>
+		</tbody>
+	      </table>
+           </div>
+"""
+
 def chat_handle(environ, start_response):
     global cnt
     ws = environ['wsgi.websocket']
@@ -17,7 +87,7 @@ def chat_handle(environ, start_response):
         remove = set()
         for s in ws_list:
             try:
-                s.send(msg)
+                s.send(msg + "," + replace_table_str)
             except Exception:
                 remove.add(s)
         for s in remove:
@@ -36,3 +106,4 @@ def myapp(environ, start_response):
 server = pywsgi.WSGIServer(('0.0.0.0', 8080), myapp, handler_class=WebSocketHandler)
 
 server.serve_forever()
+
