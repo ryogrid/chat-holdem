@@ -22,6 +22,7 @@ roles = ["SB", "BB", "", "", ""]
 statuses = ["###", "", "", "", ""]
 cards = []
 open_flags = [0, 0, 0, 0, 0]
+is_gave_cards = False
 
 def gen_all_cards():
     global cards
@@ -63,11 +64,14 @@ def handle_join(name):
 
 def handle_next_game():
     global hands
+    global is_gave_cards
     user_num = len(user_list)
-    init_cards()
-    for idx in xrange(user_num):
-        hands[idx][0] = draw_a_card()
-        hands[idx][1] = draw_a_card()
+    if is_gave_cards == False:
+        is_gave_cards = True
+        init_cards()
+        for idx in xrange(user_num):
+            hands[idx][0] = draw_a_card()
+            hands[idx][1] = draw_a_card()
     
 def handle_commands(name, pure_text):
     if pure_text == "j":
@@ -168,6 +172,7 @@ def gen_table(name, msg):
     handle_commands(name, pure_text)
     return gen_table_inner(name)
 
+# todo: when a game exit, initialaize is_gave_cards
 def chat_handle(environ, start_response):
     global user_list
     global user_hash
@@ -189,9 +194,10 @@ def chat_handle(environ, start_response):
         remove = set()
         for s in ws_set:
             try:
+                user_name = user_hash[s]
                 if user_name != "init":
                     make_enable_open(user_list.index(user_name))
-                s.send(msg + "," + gen_table(user_name, msg))
+                    s.send(msg + "," + gen_table(user_name, msg))
                 make_all_close()
             except Exception:
                 import traceback
