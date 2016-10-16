@@ -323,7 +323,7 @@ def myapp(environ, start_response):
     path = environ["PATH_INFO"]
     if path == "/":
         start_response("200 OK", [("Content-Type", "text/html")])
-        return open('./chat_sample.html').read()
+        return open('./chat_holdem.html').read()
     elif path == "/chat":
         return chat_handle(environ, start_response)
     raise Exception('Not found.')
