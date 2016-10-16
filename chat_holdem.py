@@ -327,7 +327,8 @@ def myapp(environ, start_response):
     elif path == "/chat":
         return chat_handle(environ, start_response)
     raise Exception('Not found.')
-        
+
+print("Server is running on localhost:8080...")
 server = pywsgi.WSGIServer(('0.0.0.0', 8080), myapp, handler_class=WebSocketHandler)
 server.serve_forever()
-print("Server is running on localhost:8080...")
+
