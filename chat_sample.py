@@ -9,7 +9,7 @@ user_hash = {} # ws => name
 user_list = [] # contains names
 
 cur_sb = -1
-flop_round = 0 # 0-3
+flop_round = 0 # 0-4
 
 INIT_CHIP = 500
 pod_amount = 0
@@ -70,12 +70,18 @@ def handle_next_game():
     global statuses
     global cur_sb
     global active_idx
+    global pod_amount
+    global flop_round
+    global comm_cards
     user_num = len(user_list)
     init_cards()    
     for idx in xrange(user_num):
         hands[idx][0] = draw_a_card()
         hands[idx][1] = draw_a_card()
     static_open_flags = [0, 0, 0, 0, 0]
+    pod_amount = 0
+    flop_round = 0
+    comm_cards = ["??", "??", "??", "??", "??"]
     cur_sb += 1
     sb_player_idx = cur_sb % user_num
     bb_player_idx = (cur_sb + 1) % user_num
@@ -110,9 +116,11 @@ def handle_bet(name, amount):
     global user_list
     global betting_chips
     global active_idx
+    global left_chips
     user_num = len(user_list)    
     idx = user_list.index(name)
     betting_chips[idx] = int(amount)
+    left_chips[idx] -= int(amount)
     active_idx += 1
     active_idx = active_idx % user_num
     mark_active(active_idx)
@@ -133,6 +141,40 @@ def handle_open(name):
     idx = user_list.index(name)
     static_open_flags[idx] = 1
 
+def gather_chips():
+    global betting_chips
+    global pod_amount
+    for idx in xrange(len(betting_chips)):
+        pod_amount += betting_chips[idx]
+        betting_chips[idx] = 0
+    
+def handle_next_betting():
+    global flop_round
+    global user_list
+    gather_chips()
+    flop_round += 1
+    user_num = len(user_list)    
+    active_idx = cur_sb % user_num
+    mark_active(active_idx)
+    if flop_round == 1:
+        comm_cards[0] = draw_a_card()
+        comm_cards[1] = draw_a_card()
+        comm_cards[2] = draw_a_card()        
+    if flop_round == 2:
+        comm_cards[3] = draw_a_card()
+    if flop_round == 3:
+        comm_cards[4] = draw_a_card()
+
+def handle_move_chip_from_pod(player_number, amount):
+    global left_chips
+    global pod_amount
+    left_chips[int(player_number) - 1] += int(amount)
+    pod_amount -= int(amount)
+    
+def handle_set_chip_amount_of_player(player_number, amount):
+    global left_chips
+    left_chips[int(player_number) - 1] = int(amount)
+    
 def handle_commands(name, pure_text):
     if pure_text == "j":
         handle_join(name)
@@ -143,8 +185,14 @@ def handle_commands(name, pure_text):
     elif pure_text == "f":
         handle_fold(name)
     elif pure_text == "o":
-        handle_open(name)        
-
+        handle_open(name)
+    elif pure_text == "n":
+        handle_next_betting()
+    elif pure_text.split(" ")[0] == "pmv":
+        handle_move_chip_from_pod(pure_text.split(" ")[1], pure_text.split(" ")[2])
+    elif pure_text.split(" ")[0] == "pset":
+        handle_set_chip_amount_of_player(pure_text.split(" ")[1], pure_text.split(" ")[2])        
+        
 def gen_table_inner(name):
     ret_str = "<div class=\"right_side\">"
     ret_str += "<H3>" + comm_cards[0] + " " + comm_cards[1] + " " + comm_cards[2] + " " + comm_cards[3] +" " + comm_cards[4] +  "</h3>"
@@ -247,13 +295,11 @@ def chat_handle(environ, start_response):
         msg = ws.receive()
         if msg is None:
             break
-        print("point1")
         if (not (ws in user_hash)) or (ws in user_hash and user_hash[ws] == "init"):
             user_name = msg.split(":")[0]
             user_hash[ws] = user_name
             if user_name != "init":
                 user_list.append(user_name)
-        print("point2")
         remove = set()        
         name = msg.split(":")[0]
         pure_text = msg.split(":")[1]
@@ -263,12 +309,11 @@ def chat_handle(environ, start_response):
                 user_name = user_hash[s]
                 if user_name != "init":
                     make_enable_open(user_list.index(user_name))
-                    s.send(msg + "," + gen_table(user_name, msg))
+                s.send(msg + "," + gen_table(user_name, msg))
                 make_all_close()
             except Exception:
                 import traceback
                 traceback.print_exc()
-                print("point_exception")
                 remove.add(s)
         for s in remove:
             ws_set.remove(s)
@@ -284,6 +329,5 @@ def myapp(environ, start_response):
     raise Exception('Not found.')
         
 server = pywsgi.WSGIServer(('0.0.0.0', 8080), myapp, handler_class=WebSocketHandler)
-
 server.serve_forever()
-
+print("Server is running on localhost:8080...")
