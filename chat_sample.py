@@ -127,6 +127,11 @@ def handle_fold(name):
     active_idx = active_idx % user_num    
     mark_active(active_idx)
 
+def handle_open(name):
+    global user_list
+    user_num = len(user_list)        
+    idx = user_list.index(name)
+    static_open_flags[idx] = 1
 
 def handle_commands(name, pure_text):
     if pure_text == "j":
@@ -137,6 +142,8 @@ def handle_commands(name, pure_text):
         handle_bet(name, pure_text.split(" ")[1])
     elif pure_text == "f":
         handle_fold(name)
+    elif pure_text == "o":
+        handle_open(name)        
 
 def gen_table_inner(name):
     ret_str = "<div class=\"right_side\">"
