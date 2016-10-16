@@ -22,7 +22,6 @@ roles = ["", "", "", "", ""]
 statuses = ["", "", "", "", ""]
 cards = []
 open_flags = [0, 0, 0, 0, 0]
-is_gave_cards = False
 
 def gen_all_cards():
     global cards
@@ -64,17 +63,14 @@ def handle_join(name):
 
 def handle_next_game():
     global hands
-    global is_gave_cards
     global roles
     global statuses
     global cur_sb
     user_num = len(user_list)
-    if is_gave_cards == False:
-        is_gave_cards = True
-        init_cards()
-        for idx in xrange(user_num):
-            hands[idx][0] = draw_a_card()
-            hands[idx][1] = draw_a_card()
+    init_cards()
+    for idx in xrange(user_num):
+        hands[idx][0] = draw_a_card()
+        hands[idx][1] = draw_a_card()
     cur_sb += 1
     sb_player_idx = cur_sb % user_num
     bb_player_idx = (cur_sb + 1) % user_num    
@@ -183,11 +179,9 @@ def gen_table_inner(name):
     return ret_str
 
 def gen_table(name, msg):
-    pure_text = msg.split(":")[1]
-    handle_commands(name, pure_text)
     return gen_table_inner(name)
 
-# todo: when a game exit, initialaize is_gave_cards
+
 def chat_handle(environ, start_response):
     global user_list
     global user_hash
@@ -206,7 +200,10 @@ def chat_handle(environ, start_response):
             if user_name != "init":
                 user_list.append(user_name)
         print("point2")
-        remove = set()
+        remove = set()        
+        name = msg.split(":")[0]
+        pure_text = msg.split(":")[1]
+        handle_commands(name, pure_text)        
         for s in ws_set:
             try:
                 user_name = user_hash[s]
