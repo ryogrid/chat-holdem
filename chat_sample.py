@@ -15,13 +15,15 @@ INIT_CHIP = 500
 pod_amount = 0
 left_chips = [INIT_CHIP, INIT_CHIP, INIT_CHIP, INIT_CHIP, INIT_CHIP]
 betting_chips = [0, 0, 0, 0, 0]
-hands = [["??", "??" ], ["??", "??" ], ["??", "??" ], ["??", "??" ], ["??", "??" ]]
+hands = [["", "" ], ["", "" ], ["", "" ], ["", "" ], ["", "" ]]
 comm_cards = ["??", "??", "??", "??", "??"]
-user_names = ["init", "init", "init", "init", "init"]
+user_names = ["", "", "", "", ""]
 roles = ["", "", "", "", ""]
+active_idx = 0
 statuses = ["", "", "", "", ""]
 cards = []
 open_flags = [0, 0, 0, 0, 0]
+static_open_flags = [0, 0, 0, 0, 0]
 
 def gen_all_cards():
     global cards
@@ -57,6 +59,7 @@ def is_active(name):
 
 def handle_join(name):
     global user_names
+    global user_list
     idx = user_list.index(name)
     user_names[idx] = name
     return
@@ -66,14 +69,17 @@ def handle_next_game():
     global roles
     global statuses
     global cur_sb
+    global active_idx
     user_num = len(user_list)
-    init_cards()
+    init_cards()    
     for idx in xrange(user_num):
         hands[idx][0] = draw_a_card()
         hands[idx][1] = draw_a_card()
+    static_open_flags = [0, 0, 0, 0, 0]
     cur_sb += 1
     sb_player_idx = cur_sb % user_num
-    bb_player_idx = (cur_sb + 1) % user_num    
+    bb_player_idx = (cur_sb + 1) % user_num
+    active_idx = cur_sb % user_num
     for idx in xrange(user_num):
         if idx == sb_player_idx:
             roles[idx] = "SB"
@@ -83,13 +89,54 @@ def handle_next_game():
         else:
             roles[idx] = ""
             statuses[idx] = ""
-    
+
+def mark_active(active_idx):
+    global statuses
+    global user_list
+    user_num = len(user_list)    
+    for idx in xrange(user_num):
+        if idx == active_idx:
+            statuses[idx] = "###"
+        else:
+            statuses[idx] = ""
+
+def remove_card(user_idx):
+    global hands
+    hands[user_idx][0] = "XX"
+    hands[user_idx][1] = "XX"
+    static_open_flags[user_idx] = 1
+
+def handle_bet(name, amount):
+    global user_list
+    global betting_chips
+    global active_idx
+    user_num = len(user_list)    
+    idx = user_list.index(name)
+    betting_chips[idx] = int(amount)
+    active_idx += 1
+    active_idx = active_idx % user_num
+    mark_active(active_idx)
+            
+def handle_fold(name):
+    global user_list
+    global active_idx
+    user_num = len(user_list)        
+    idx = user_list.index(name)
+    remove_card(idx)
+    active_idx += 1
+    active_idx = active_idx % user_num    
+    mark_active(active_idx)
+
+
 def handle_commands(name, pure_text):
     if pure_text == "j":
         handle_join(name)
     elif pure_text == "ng":
         handle_next_game()
-
+    elif pure_text.split(" ")[0] == "b":
+        handle_bet(name, pure_text.split(" ")[1])
+    elif pure_text == "f":
+        handle_fold(name)
 
 def gen_table_inner(name):
     ret_str = "<div class=\"right_side\">"
@@ -151,23 +198,23 @@ def gen_table_inner(name):
     ret_str += """</tr>
 		  <tr>
 		    <td>hand</td>"""
-    if open_flags[0] == 1:
+    if open_flags[0] == 1 or static_open_flags[0] == 1:
         ret_str += "<td>" + hands[0][0] + " " + hands[0][1] + "</td>"
     else:
         ret_str += "<td>?? ??</td>"
-    if open_flags[1] == 1:
+    if open_flags[1] == 1 or static_open_flags[1] == 1:
         ret_str += "<td>" + hands[1][0] + " " + hands[1][1] + "</td>"
     else:
         ret_str += "<td>?? ??</td>"
-    if open_flags[2] == 1:
+    if open_flags[2] == 1 or static_open_flags[2] == 1:
         ret_str += "<td>" + hands[2][0] + " " + hands[2][1] + "</td>"
     else:
         ret_str += "<td>?? ??</td>"
-    if open_flags[3] == 1:
+    if open_flags[3] == 1 or static_open_flags[3] == 1:
         ret_str += "<td>" + hands[3][0] + " " + hands[3][1] + "</td>"
     else:
         ret_str += "<td>?? ??</td>"
-    if open_flags[4] == 1:
+    if open_flags[4] == 1 or static_open_flags[4] == 1:
         ret_str += "<td>" + hands[4][0] + " " + hands[4][1] + "</td>"
     else:
         ret_str += "<td>?? ??</td>"
