@@ -8,7 +8,7 @@ ws_set = set()
 user_hash = {} # ws => name
 user_list = [] # contains names
 
-cur_sb = 0
+cur_sb = -1
 flop_round = 0 # 0-3
 
 INIT_CHIP = 500
@@ -18,8 +18,8 @@ betting_chips = [0, 0, 0, 0, 0]
 hands = [["??", "??" ], ["??", "??" ], ["??", "??" ], ["??", "??" ], ["??", "??" ]]
 comm_cards = ["??", "??", "??", "??", "??"]
 user_names = ["init", "init", "init", "init", "init"]
-roles = ["SB", "BB", "", "", ""]
-statuses = ["###", "", "", "", ""]
+roles = ["", "", "", "", ""]
+statuses = ["", "", "", "", ""]
 cards = []
 open_flags = [0, 0, 0, 0, 0]
 is_gave_cards = False
@@ -65,6 +65,9 @@ def handle_join(name):
 def handle_next_game():
     global hands
     global is_gave_cards
+    global roles
+    global statuses
+    global cur_sb
     user_num = len(user_list)
     if is_gave_cards == False:
         is_gave_cards = True
@@ -72,11 +75,23 @@ def handle_next_game():
         for idx in xrange(user_num):
             hands[idx][0] = draw_a_card()
             hands[idx][1] = draw_a_card()
+    cur_sb += 1
+    sb_player_idx = cur_sb % user_num
+    bb_player_idx = (cur_sb + 1) % user_num    
+    for idx in xrange(user_num):
+        if idx == sb_player_idx:
+            roles[idx] = "SB"
+            statuses[idx] = "###"
+        elif idx == bb_player_idx:
+            roles[idx] = "BB"
+        else:
+            roles[idx] = ""
+            statuses[idx] = ""
     
 def handle_commands(name, pure_text):
     if pure_text == "j":
         handle_join(name)
-    elif pure_text == "n":
+    elif pure_text == "ng":
         handle_next_game()
 
 
