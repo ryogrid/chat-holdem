@@ -176,6 +176,29 @@ def handle_move_chip_from_pod(player_number, amount):
 def handle_set_chip_amount_of_player(player_number, amount):
     global left_chips
     left_chips[int(player_number) - 1] = int(amount)
+
+def handle_end_table():
+    global user_hash, user_list, cur_sb, flop_round, pod_amount, left_chips
+    global betting_chips, hands, comm_cards, user_names, roles, active_idx
+    global statuses, cards, open_flags, static_open_flags
+    
+    user_hash = {} # ws => name
+    user_list = [] # contains names
+    cur_sb = -1
+    flop_round = 0 # 0-4
+    pod_amount = 0
+    left_chips = [INIT_CHIP, INIT_CHIP, INIT_CHIP, INIT_CHIP, INIT_CHIP]
+    betting_chips = [0, 0, 0, 0, 0]
+    hands = [["", "" ], ["", "" ], ["", "" ], ["", "" ], ["", "" ]]
+    comm_cards = ["??", "??", "??", "??", "??"]
+    user_names = ["", "", "", "", ""]
+    roles = ["", "", "", "", ""]
+    active_idx = 0
+    statuses = ["", "", "", "", ""]
+    cards = []
+    open_flags = [0, 0, 0, 0, 0]
+    static_open_flags = [0, 0, 0, 0, 0]
+
     
 def handle_commands(name, pure_text):
     if pure_text == "j":
@@ -193,7 +216,9 @@ def handle_commands(name, pure_text):
     elif pure_text.split(" ")[0] == "pmv":
         handle_move_chip_from_pod(pure_text.split(" ")[1], pure_text.split(" ")[2])
     elif pure_text.split(" ")[0] == "pset":
-        handle_set_chip_amount_of_player(pure_text.split(" ")[1], pure_text.split(" ")[2])        
+        handle_set_chip_amount_of_player(pure_text.split(" ")[1], pure_text.split(" ")[2])
+    elif pure_text == "cl":
+        handle_end_table()
         
 def gen_table_inner(name):
     ret_str = "<div class=\"right_side\">"
@@ -308,7 +333,11 @@ def chat_handle(environ, start_response):
         handle_commands(name, pure_text)        
         for s in ws_set:
             try:
-                user_name = user_hash[s]
+                if s in user_hash:
+                    user_name = user_hash[s]
+                else:
+                    user_name = "init"
+                    
                 if user_name != "init":
                     make_enable_open(user_list.index(user_name))
                 s.send(msg + "," + gen_table(user_name, msg))
