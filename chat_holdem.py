@@ -54,9 +54,6 @@ def make_all_close():
     global open_flags
     open_flags = [0, 0, 0, 0, 0]
 
-def is_active(name):
-    print("not implemented yet")
-
 def handle_join(name):
     global user_names
     global user_list
@@ -96,15 +93,20 @@ def handle_next_game():
             roles[idx] = ""
             statuses[idx] = ""
 
-def mark_active(active_idx):
+def mark_active(idx):
     global statuses
     global user_list
-    user_num = len(user_list)    
-    for idx in xrange(user_num):
-        if idx == active_idx:
-            statuses[idx] = "###"
-        else:
-            statuses[idx] = ""
+    global active_idx
+    user_num = len(user_list)        
+    if static_open_flags[idx] == 1:        
+        mark_active((idx + 1) % user_num)
+    else:
+        active_idx = idx
+        for idx in xrange(user_num):
+            if idx == active_idx:
+                statuses[idx] = "###"
+            else:
+                statuses[idx] = ""
 
 def remove_card(user_idx):
     global hands
@@ -119,7 +121,7 @@ def handle_bet(name, amount):
     global left_chips
     user_num = len(user_list)    
     idx = user_list.index(name)
-    betting_chips[idx] = int(amount)
+    betting_chips[idx] += int(amount)
     left_chips[idx] -= int(amount)
     active_idx += 1
     active_idx = active_idx % user_num
