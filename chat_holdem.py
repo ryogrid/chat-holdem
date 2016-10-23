@@ -344,7 +344,12 @@ def chat_handle(environ, start_response):
         remove = set()        
         name = msg.split(":")[0]
         pure_text = msg.split(":")[1]
-        handle_commands(name, pure_text)        
+        try:
+            handle_commands(name, pure_text)
+        except Exception:
+            import traceback
+            traceback.print_exc()
+            return
         for s in ws_set:
             try:
                 if s in user_hash:
