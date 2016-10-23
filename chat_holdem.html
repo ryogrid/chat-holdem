@@ -26,7 +26,7 @@
     <script>
       $(function() {
         var data = {};
-        ws = new WebSocket("ws://192.168.0.3:8080/chat");
+        ws = new WebSocket("ws://126.10.255.147:8080/chat");
         ws.onopen = function() {
            ws.send('init:enter!');
         };

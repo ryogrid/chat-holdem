@@ -97,7 +97,18 @@ def mark_active(idx):
     global statuses
     global user_list
     global active_idx
-    user_num = len(user_list)        
+    user_num = len(user_list)
+    not_all_flag = False
+
+    
+    for val in static_open_flags:
+        if val == 0:
+            not_all_flag = True
+    # if all users are opening cards
+    if not_all_flag == False:
+        statuses[(idx + 1) % user_num] = "###"
+        return
+    
     if static_open_flags[idx] == 1:        
         mark_active((idx + 1) % user_num)
     else:
