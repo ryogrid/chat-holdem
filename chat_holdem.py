@@ -12,6 +12,7 @@ cur_sb = -1
 flop_round = 0 # 0-4
 
 INIT_CHIP = 500
+SB_BLIND = 1
 pod_amount = 0
 left_chips = [INIT_CHIP, INIT_CHIP, INIT_CHIP, INIT_CHIP, INIT_CHIP]
 betting_chips = [0, 0, 0, 0, 0]
@@ -64,7 +65,7 @@ def handle_join(name):
 def handle_next_game():
     global hands, roles, statuses, cur_sb
     global active_idx, pod_amount, flop_round
-    global comm_cards, static_open_flags
+    global comm_cards, static_open_flags, betting_chips
     
     user_num = len(user_list)
     init_cards()    
@@ -78,16 +79,21 @@ def handle_next_game():
     cur_sb += 1
     sb_player_idx = cur_sb % user_num
     bb_player_idx = (cur_sb + 1) % user_num
-    active_idx = cur_sb % user_num
+
     for idx in xrange(user_num):
         if idx == sb_player_idx:
             roles[idx] = "SB"
-            statuses[idx] = "###"
+            left_chips[idx] -= SB_BLIND
+            betting_chips[idx] = SB_BLIND
         elif idx == bb_player_idx:
             roles[idx] = "BB"
+            left_chips[idx] -= SB_BLIND * 2
+            betting_chips[idx] = SB_BLIND * 2
         else:
-            roles[idx] = ""
+            roles[idx] = ""            
             statuses[idx] = ""
+    active_idx = (cur_sb + 2) % user_num
+    mark_active(active_idx)
 
 def mark_active(mark_idx):
     global statuses
