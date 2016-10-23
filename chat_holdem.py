@@ -110,7 +110,7 @@ def mark_active(mark_idx):
 
     active_idx = mark_idx    
     if static_open_flags[mark_idx] == 1:
-        for inc in xrange(1..user_num):
+        for inc in xrange(1,user_num):
             if static_open_flags[(mark_idx + inc) % user_num] == 0:
                 active_idx = (mark_idx + inc) % user_num
                 break
