@@ -62,14 +62,10 @@ def handle_join(name):
     return
 
 def handle_next_game():
-    global hands
-    global roles
-    global statuses
-    global cur_sb
-    global active_idx
-    global pod_amount
-    global flop_round
-    global comm_cards
+    global hands, roles, statuses, cur_sb
+    global active_idx, pod_amount, flop_round
+    global comm_cards, static_open_flags
+    
     user_num = len(user_list)
     init_cards()    
     for idx in xrange(user_num):
