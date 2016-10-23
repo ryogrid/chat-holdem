@@ -100,9 +100,8 @@ def mark_active(idx):
     user_num = len(user_list)
     not_all_flag = False
 
-    
-    for val in static_open_flags:
-        if val == 0:
+    for idx in xrange(user_num):
+        if static_open_flags[idx] == 0:
             not_all_flag = True
     # if all users are opening cards
     if not_all_flag == False:
