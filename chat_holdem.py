@@ -333,9 +333,12 @@ def chat_handle(environ, start_response):
         msg = ws.receive()
         if msg is None:
             break
+        user_name = msg.split(":")[0]        
         if (not (ws in user_hash)) or (ws in user_hash and user_hash[ws] == "init"):
-            user_name = msg.split(":")[0]
             user_hash[ws] = user_name
+            if user_name != "init":
+                user_list.append(user_name)
+        if ws in user_hash and user_name not in user_list:
             if user_name != "init":
                 user_list.append(user_name)
         remove = set()        
