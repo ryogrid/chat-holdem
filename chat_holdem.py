@@ -93,7 +93,7 @@ def handle_next_game():
             roles[idx] = ""
             statuses[idx] = ""
 
-def mark_active(idx):
+def mark_active(mark_idx):
     global statuses
     global user_list
     global active_idx
@@ -105,18 +105,20 @@ def mark_active(idx):
             not_all_flag = True
     # if all users are opening cards
     if not_all_flag == False:
-        statuses[(idx + 1) % user_num] = "###"
+        statuses[(mark_idx + 1) % user_num] = "###"
         return
-    
-    if static_open_flags[idx] == 1:        
-        mark_active((idx + 1) % user_num)
-    else:
-        active_idx = idx
-        for idx in xrange(user_num):
-            if idx == active_idx:
-                statuses[idx] = "###"
-            else:
-                statuses[idx] = ""
+
+    active_idx = mark_idx    
+    if static_open_flags[mark_idx] == 1:
+        for inc in xrange(1..user_num):
+            if static_open_flags[(mark_idx + inc) % user_num] == 0:
+                active_idx = (mark_idx + inc) % user_num
+                break
+    for idx in xrange(user_num):
+        if idx == active_idx:
+            statuses[idx] = "###"
+        else:
+            statuses[idx] = ""
 
 def remove_card(user_idx):
     global hands
